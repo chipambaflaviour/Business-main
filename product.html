@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Details - ALTECH BUSINESS CENTER</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(to right, #868f96 0%, #596164 100%);
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            color: white;
+        }
+        #product-details {
+            margin-bottom: 20px;
+        }
+        #comments {
+            margin-top: 20px;
+        }
+        textarea {
+            width: 30%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #1F3F49;
+        }
+        .Home{
+            color: white;
+        }
+    </style>
+    <script>
+        async function loadProductDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const productResponse = await fetch(`get_product.php?id=${productId}`);
+            const product = await productResponse.json();
+            const productDetailsDiv = document.getElementById('product-details');
+            productDetailsDiv.innerHTML = `
+                <img src="${product.image}" alt="${product.name}">
+                <h2>${product.name}</h2>
+                <p>${product.description}</p>
+                <p>Price: ZMW${product.price}</p>
+            `;
+
+            const commentsResponse = await fetch(`get_comments.php?product_id=${productId}`);
+            const comments = await commentsResponse.json();
+            const commentsDiv = document.getElementById('comments');
+            commentsDiv.innerHTML = ''; // Clear previous comments
+            comments.forEach(comment => {
+                const commentDiv = document.createElement('div');
+                commentDiv.innerText = comment.comment;
+                commentsDiv.appendChild(commentDiv);
+            });
+        }
+
+        async function addComment() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const comment = document.getElementById('comment-input').value;
+
+            await fetch('add_comment.php', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    product_id: productId,
+                    comment: comment
+                })
+            });
+
+            document.getElementById('comment-input').value = '';
+            loadProductDetails();
+        }
+
+        // Load product details on page load
+        window.onload = loadProductDetails;
+    </script>
+</head>
+<body>
+    <h1>Product Details</h1>
+    <div id="product-details"></div>
+    <div id="comments"></div>
+    <textarea id="comment-input" placeholder="Add a comment..."></textarea>
+    <br>
+    <button onclick="addComment()">Submit Comment</button>
+    <button onclick="addComment()" class="Home"><a href="index.html">Home</a></button>
+</body>
+</html>
